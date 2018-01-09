@@ -58,10 +58,9 @@ straightLineOptions =
 mainWith :: (Action, Either String FilePath) -> IO ()
 mainWith (action, source) = do
     code <- either return readFile source
-    let prog =
-            case parse Parser.program (either (const "(expr)") id source) code of
-                Left err -> error (show err)
-                Right ast -> ast
+    let sourceName = either (const "(expr)") id source
+        parseResult = parse Parser.program sourceName code
+        prog = either (error . show) id parseResult
     case action of
         Execute input -> print $ Evaluator.run input prog
         PrettyPrint overwrite ->
