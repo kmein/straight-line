@@ -10,9 +10,10 @@ import Text.Parser.Combinators
 
 program :: (CharParsing p, Monad p) => p Program
 program =
-    try (singleton <$> (instruction <* skipOptional spaces <* eof)) <|>
-    (Cons <$> (instruction <* sym ";") <*> program) <|>
-    (Nil <$ eof)
+    choice
+        [ try $ singleton <$> (instruction <* skipOptional spaces <* eof)
+        , Cons <$> (instruction <* sym ";") <*> program
+        , Nil <$ eof]
   where
     singleton x = Cons x Nil
 
@@ -21,8 +22,10 @@ instruction = Assign <$> (variable <* sym ":=") <*> expression
 
 variable :: (CharParsing p, Monad p) => p Variable
 variable =
-    (Output <$ char 'o') <|> (Input <$> (char 'i' *> nat')) <|>
-    (X <$> (char 'x' *> nat'))
+    choice
+        [ Output <$ char 'o'
+        , Input <$> (char 'i' *> nat')
+        , X <$> (char 'x' *> nat')]
   where
     nat' :: (CharParsing p, Monad p) => p Natural
     nat' =
@@ -34,9 +37,10 @@ variable =
 
 expression :: (CharParsing p, Monad p) => p Expression
 expression =
-    try (Add <$> (variable <* sym "+") <*> variable) <|>
-    (Multiply <$> (variable <* sym "*") <*> variable) <|>
-    (Constant <$> nat)
+    choice
+        [ try $ Add <$> (variable <* sym "+") <*> variable
+        , Multiply <$> (variable <* sym "*") <*> variable
+        , Constant <$> nat]
 
 nat :: CharParsing p => p Natural
 nat = read <$> some digit
