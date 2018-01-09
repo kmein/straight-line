@@ -11,11 +11,8 @@ import Text.Parser.Combinators
 program :: (CharParsing p, Monad p) => p Program
 program =
     choice
-        [ try $ singleton <$> (instruction <* skipOptional spaces <* eof)
-        , Cons <$> (instruction <* sym ";") <*> program
-        , Nil <$ eof]
-  where
-    singleton x = Cons x Nil
+        [ try $ One <$> (instruction <* skipOptional spaces <* eof)
+        , Then <$> (instruction <* sym ";") <*> program]
 
 instruction :: (CharParsing p, Monad p) => p Instruction
 instruction = Assign <$> (variable <* sym ":=") <*> expression

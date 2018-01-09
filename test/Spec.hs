@@ -45,9 +45,8 @@ tests =
                   "x0 := 1;\no := x0 * x0" @=?
                   show
                       (pretty $
-                       Cons
-                           (Assign (X 0) (Constant 1))
-                           (Cons (Assign Output (Multiply (X 0) (X 0))) Nil))]
+                       Assign (X 0) (Constant 1) `Then`
+                       One (Assign Output (Multiply (X 0) (X 0))))]
           , testProperty "inverse" $
             \(p :: Program) ->
                  parseMaybe Parser.program (show $ pretty p) == Just p]]

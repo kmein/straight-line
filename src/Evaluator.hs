@@ -10,8 +10,8 @@ import qualified Data.Map.Strict as M (fromList, insert, lookup)
 eval :: Program -> State Memory Natural
 eval prog = do
     case prog of
-        Nil -> gets (deref Output)
-        Cons i is -> evalI i >> eval is
+        One i -> evalI i >> gets (deref Output)
+        Then i is -> evalI i >> eval is
   where
     evalI :: Instruction -> State Memory ()
     evalI (Assign v e) = modify $ \memory -> M.insert v (expression memory e) memory

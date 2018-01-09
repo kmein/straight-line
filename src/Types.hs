@@ -30,9 +30,9 @@ data Instruction =
      deriving (Show, Eq)
 
 data Program
-    = Cons Instruction
+    = One Instruction
+    | Then Instruction
            Program
-    | Nil
      deriving (Show, Eq)
 
 instance Pretty Natural where
@@ -47,9 +47,8 @@ instance Pretty Instruction where
     pretty (Assign v e) = pretty v <+> string ":=" <+> pretty e
 
 instance Pretty Program where
-    pretty Nil = empty
-    pretty (Cons x Nil) = pretty x
-    pretty (Cons x xs) = pretty x <> semi <$> pretty xs
+    pretty (One x) = pretty x
+    pretty (Then x xs) = pretty x <> semi <$> pretty xs
 
 instance Pretty Expression where
     pretty (Add v0 v1) = pretty v0 <+> char '+' <+> pretty v1
@@ -78,4 +77,4 @@ instance QC.Arbitrary Instruction where
 
 instance QC.Arbitrary Program where
     arbitrary =
-        QC.frequency [(1, pure Nil), (5, liftA2 Cons QC.arbitrary QC.arbitrary)]
+        QC.frequency [(1, fmap One QC.arbitrary), (3, liftA2 Then QC.arbitrary QC.arbitrary)]
