@@ -23,7 +23,7 @@ library:
   source-dirs: src
 
 executables:
-  slc:
+  slp:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -36,7 +36,7 @@ executables:
     - parsec
 
 tests:
-  slc-test:
+  slp-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
