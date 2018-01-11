@@ -69,5 +69,7 @@ tests =
                    0 == Evaluator.run input (parse alwaysZero)
              , testProperty product4 $ \a b c d ->
                    a * b * c * d == Evaluator.run [a, b, c, d] (parse product4)
+             , testProperty "i_ == 0" $ \prog ->
+                   Evaluator.run (replicate 50 0) prog == Evaluator.run [] prog
              ]
     ]
