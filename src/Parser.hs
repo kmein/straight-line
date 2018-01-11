@@ -1,6 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 module Parser (program, instruction, variable, expression) where
 
+import Utility (NonEmptyList(..))
 import Types
 
 import Control.Applicative (Alternative(..))
@@ -9,10 +10,13 @@ import Text.Parser.Char
 import Text.Parser.Combinators
 
 program :: (CharParsing p, Monad p) => p Program
-program =
-    choice
-        [ try $ One <$> (instruction <* skipOptional spaces <* eof)
-        , Then <$> (instruction <* sym ";") <*> program]
+program = Program <$> program'
+  where
+    program' =
+        choice
+            [ try $ Last <$> (instruction <* skipOptional spaces <* eof)
+            , Cons <$> (instruction <* sym ";") <*> program'
+            ]
 
 instruction :: (CharParsing p, Monad p) => p Instruction
 instruction = Assign <$> (variable <* sym ":=") <*> expression

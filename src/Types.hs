@@ -1,12 +1,16 @@
 module Types where
 
+import Utility
+
 import Control.Applicative (liftA2)
+import Data.Foldable (toList)
+import Data.List (intersperse)
 import Data.Map.Strict (Map)
 import Numeric.Natural (Natural)
 import Prelude hiding ((<$>))
-import Text.PrettyPrint.Leijen
 import qualified Test.QuickCheck as QC
 import qualified Test.QuickCheck.Gen as QC
+import Text.PrettyPrint.Leijen
 
 type Memory = Map Variable Natural
 
@@ -29,11 +33,9 @@ data Instruction =
            Expression
      deriving (Show, Eq)
 
-data Program
-    = One Instruction
-    | Then Instruction
-           Program
-     deriving (Show, Eq)
+newtype Program = Program
+    { instructions :: NonEmptyList Instruction
+    } deriving (Show, Eq)
 
 instance Pretty Natural where
     pretty = int . fromIntegral
@@ -47,8 +49,8 @@ instance Pretty Instruction where
     pretty (Assign v e) = pretty v <+> string ":=" <+> pretty e
 
 instance Pretty Program where
-    pretty (One x) = pretty x
-    pretty (Then x xs) = pretty x <> semi <$> pretty xs
+    pretty =
+        hcat . intersperse (semi <> line) . toList . fmap pretty . instructions
 
 instance Pretty Expression where
     pretty (Add v0 v1) = pretty v0 <+> char '+' <+> pretty v1
@@ -77,4 +79,9 @@ instance QC.Arbitrary Instruction where
 
 instance QC.Arbitrary Program where
     arbitrary =
-        QC.frequency [(1, fmap One QC.arbitrary), (3, liftA2 Then QC.arbitrary QC.arbitrary)]
+        fmap
+            Program
+            (QC.frequency
+                 [ (1, fmap Last QC.arbitrary)
+                 , (3, liftA2 Cons QC.arbitrary QC.arbitrary)
+                 ])
