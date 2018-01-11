@@ -2,6 +2,9 @@
 *A small non-Turing-complete programming language*
 
 ## Syntax
+The set *SLP* of all Straight-Line programs is the smallest set which can be
+constructed inductively from the following BNF.
+
 ```
 <program> ::= <instruction>
             | <instruction> ";" <program>
@@ -16,11 +19,11 @@
              | "i0" | "i1" | "i2" | ...
              | "x0" | "x1" | "x2ʺ | ...
 
-<constant> ::= 0 | 1 | 2 | ...
+<constant> ::= "0" | "1" | "2" | ...
 ```
 
 ## Semantics
-All programs *P* in Straight-Line model a function *f : ℕ<sup>k</sup> → ℕ*. This function
+All programs *P ∈ SLP* model a function *f : ℕ<sup>k</sup> → ℕ*. This function
 is calculated as follows:
 * The variables `i0`, `i1`, ... are input parameters, they have to be set when
   the program is run.
