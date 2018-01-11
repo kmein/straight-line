@@ -1,75 +1,90 @@
+{-# LANGUAGE LambdaCase #-}
 module Main where
 
+import Types (Program)
 import qualified Parser
 import qualified Evaluator
 
 import Data.Monoid ((<>))
 import Numeric.Natural (Natural)
 import Options.Applicative
+import Test.QuickCheck (generate, arbitrary)
 import Text.Parsec (parse)
 import Text.PrettyPrint.Leijen (pretty)
 
+type Source = Either String FilePath
+
 data Action
-    = Execute [Natural]
-    | PrettyPrint Bool
-    | CompileTo FilePath
+    = Execute [Natural] Source
+    | PrettyPrint Bool Source
+    | CompileTo FilePath Source
+    | Generate
 
-straightLineOptions :: Parser (Action, Either String FilePath)
+straightLineOptions :: Parser Action
 straightLineOptions =
-    (,) <$>
-    subparser
-        (command
-             "exec"
-             (info
-                  (Execute <$>
-                   some
-                       (argument
-                            auto
-                            (metavar "INPUT" <>
-                             help "Natural numbers, input for the program")))
-                  (progDesc "Execute a program")) <>
-         command
-             "pretty"
-             (info
-                  (PrettyPrint <$>
-                   switch
-                       (long "in-place" <> short 'i' <>
-                        help "Overwrite the source file"))
-                  (progDesc "Pretty-print a program")) <>
-         command
-             "compile"
-             (info
-                  (CompileTo <$>
-                   strOption
-                       (short 'o' <> long "output" <> metavar "PATH" <>
-                        help "The destination of the compiled program"))
-                  (progDesc "Compile a program to machine code"))) <*>
-    (fmap
-         Left
-         (strOption
-              (short 'e' <> metavar "PROGRAM" <>
-               help "A Straight-Line program passed on the command line")) <|>
-     fmap
-         Right
-         (strArgument
-              (metavar "PATH" <>
-               help "The input file containing the source code")))
+    hsubparser $
+    command
+        "exec"
+        (info
+             (flip Execute <$> parseSource <*>
+              some -- at least one: ℕ^k
+                  (argument
+                       auto
+                       (metavar "INPUT" <>
+                        help "Natural numbers, input for the program")))
+             (progDesc "Execute a program")) <>
+    command
+        "pretty"
+        (info
+             (PrettyPrint <$>
+              switch
+                  (long "in-place" <> short 'i' <>
+                   help "Overwrite the source file") <*>
+              parseSource)
+             (progDesc "Pretty-print a program")) <>
+    command
+        "compile"
+        (info
+             (CompileTo <$>
+              strOption
+                  (short 'o' <> long "output" <> metavar "PATH" <>
+                   help "The destination of the compiled program") <*>
+              parseSource)
+             (progDesc "Compile a program to machine code")) <>
+    command "gen" (info (pure Generate) (progDesc "Generate a random program"))
+  where
+    parseSource =
+        fmap
+            Left
+            (strOption
+                 (short 'e' <> metavar "PROGRAM" <>
+                  help "A Straight-Line program passed on the command line")) <|>
+        fmap
+            Right
+            (strArgument
+                 (metavar "PATH" <>
+                  help "The input file containing the source code"))
 
-mainWith :: (Action, Either String FilePath) -> IO ()
-mainWith (action, source) = do
-    code <- either return readFile source
-    let sourceName = either (const "(expr)") id source
-        parseResult = parse Parser.program sourceName code
-        prog = either (error . show) id parseResult
-    case action of
-        Execute input -> print $ Evaluator.run input prog
-        PrettyPrint overwrite ->
+mainWith :: Action -> IO ()
+mainWith =
+    \case
+        Execute input source ->
+            print . Evaluator.run input =<< readProgram source
+        PrettyPrint overwrite source -> do
+            prog <- readProgram source
             let prettified = show $ pretty prog
-            in case source of
-                   Right path
-                       | overwrite -> writeFile path prettified
-                   _ -> putStrLn prettified
-        CompileTo _ -> error "Compilation not yet implemented."
+            case source of
+                Right path
+                    | overwrite -> writeFile path prettified
+                _ -> putStrLn prettified
+        CompileTo _ _ -> error "Compilation not yet implemented."
+        Generate -> print . pretty =<< (generate arbitrary :: IO Program)
+  where
+    readProgram source = do
+        code <- either return readFile source
+        let sourceName = either (const "(expr)") id source
+            parseResult = parse Parser.program sourceName code
+        return $ either (error . show) id parseResult
 
 main :: IO ()
 main = mainWith =<< execParser opts
