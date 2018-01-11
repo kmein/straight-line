@@ -27,11 +27,12 @@ is calculated as follows:
 * All other variables are initialised to `0`.
 * `x := c` assigns a constant `c` to a variable `x`.
 * `x := a + b` and `x := a * b` assign the sum/product of variables `a` and
-  `b` to an variable `x`.
+  `b` to a variable `x`.
 * The function's result is the content of the variable `o`.
 
 ## Example
-The following program (source code [here](/examples/mystery.sline)) calculates the function *f(x, y) = x²y² + x²*:
+The following program (source code [here](/examples/mystery.sline)) calculates
+the function *f(x, y) = x²y² + x²*:
 
 ```
 x0 := i0 * i0;
