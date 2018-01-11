@@ -20,7 +20,7 @@
 ```
 
 ## Semantics
-All programs *P* in Straight-Line model a function *f : N^k^ → N*. This function
+All programs *P* in Straight-Line model a function *f : ℕ<sup>k</sup> → ℕ*. This function
 is calculated as follows:
 * The variables `i0`, `i1`, ... are input parameters, they have to be set when
   the program is run.
