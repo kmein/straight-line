@@ -77,9 +77,8 @@ instance QC.Arbitrary Instruction where
 
 instance QC.Arbitrary Program where
     arbitrary =
-        fmap
-            Program
-            (QC.frequency
-                 [ (1, fmap Last QC.arbitrary)
-                 , (3, liftA2 Cons QC.arbitrary QC.arbitrary)
-                 ])
+        Program <$>
+        QC.frequency
+            [ (1, ([] :|) <$> QC.arbitrary)
+            , (3, (:|) <$> QC.arbitrary <*> QC.arbitrary)
+            ]

@@ -11,9 +11,7 @@ import Test.QuickCheck (Arbitrary(..))
 import Test.QuickCheck.Gen (suchThat)
 
 data NonEmptyList a
-    = Last a
-    | Cons a
-           !(NonEmptyList a)
+    = [a] :| a
     deriving (Eq, Functor, Foldable, Traversable)
 
 instance Show a => Show (NonEmptyList a) where
@@ -29,6 +27,8 @@ instance IsList (NonEmptyList a) where
     type Item (NonEmptyList a) = a
     toList = F.toList
     fromList [] = error "Non-empty list cannot be empty."
-    fromList [x] = Last x
-    fromList (x:xs) = Cons x (fromList xs)
+    fromList [x] = [] :| x
+    fromList (x:xs) =
+        let (ys :| y) = fromList xs
+        in (x : ys) :| y
 
