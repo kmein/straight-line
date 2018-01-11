@@ -38,8 +38,8 @@ straightLineOptions =
         (info
              (PrettyPrint <$>
               switch
-                  (long "in-place" <> short 'i' <>
-                   help "Overwrite the source file") <*>
+                  (long "internal" <> short 'i' <>
+                   help "Display the internal representation") <*>
               parseSource)
              (progDesc "Pretty-print a program")) <>
     command
@@ -70,13 +70,11 @@ mainWith =
     \case
         Execute input source ->
             print . Evaluator.run input =<< readProgram source
-        PrettyPrint overwrite source -> do
+        PrettyPrint internal source -> do
             prog <- readProgram source
-            let prettified = show $ pretty prog
-            case source of
-                Right path
-                    | overwrite -> writeFile path prettified
-                _ -> putStrLn prettified
+            if internal
+                then print prog
+                else print $ pretty prog
         CompileTo _ _ -> error "Compilation not yet implemented."
         Generate -> print . pretty =<< (generate arbitrary :: IO Program)
   where
