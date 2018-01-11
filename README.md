@@ -29,3 +29,13 @@ is calculated as follows:
 * `x := a + b` and `x := a * b` assign the sum/product of variables `a` and
   `b` to an variable `x`.
 * The function's result is the content of the variable `o`.
+
+## Example
+The following program (source code [here](/examples/mystery.sline)) calculates the function *f(x, y) = x²y² + x²*:
+
+```
+x0 := i0 * i0;
+i1 := i1 * i1;
+o := x0 * i1;
+o := o + x0
+```
