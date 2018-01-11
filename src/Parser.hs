@@ -1,10 +1,8 @@
 {-# LANGUAGE LambdaCase #-}
 module Parser (program, instruction, variable, expression) where
 
-import Utility (NonEmptyList(..))
 import Types
 
-import Control.Applicative (Alternative(..))
 import GHC.Exts (fromList)
 import Numeric.Natural (Natural)
 import Text.Parser.Char
