@@ -39,6 +39,9 @@ tests =
                   parseMaybe Parser.instruction "o:=        0"
                 , testCase "x0_ invalid" $
                   Nothing @=? (parseMaybe Parser.variable "x01")
+                , testCase "final new-line" $
+                  Right (Program [Assign Output (Constant 0)]) @=?
+                  parse Parser.program [] "o:=0\n"
                 ]
           , testGroup
                 "Pretty-Printer"

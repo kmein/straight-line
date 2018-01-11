@@ -7,10 +7,10 @@ import Data.Foldable (toList)
 import Data.List (intersperse)
 import Data.Map.Strict (Map)
 import Numeric.Natural (Natural)
-import Prelude hiding ((<$>))
+import Prelude
 import qualified Test.QuickCheck as QC
 import qualified Test.QuickCheck.Gen as QC
-import Text.PrettyPrint.Leijen
+import Text.PrettyPrint.Leijen hiding ((<$>))
 
 type Memory = Map Variable Natural
 
@@ -58,24 +58,22 @@ instance Pretty Expression where
     pretty (Constant n) = pretty n
 
 instance QC.Arbitrary Natural where
-    arbitrary = QC.sized (\n -> fmap fromIntegral $ QC.choose (0, n))
+    arbitrary = QC.sized (\n -> fromIntegral <$> QC.choose (0, n))
 
 instance QC.Arbitrary Variable where
     arbitrary =
-        QC.oneof
-            [ pure Output
-            , fmap Input QC.arbitrary
-            , fmap X QC.arbitrary]
+        QC.oneof [pure Output, Input <$> QC.arbitrary, X <$> QC.arbitrary]
 
 instance QC.Arbitrary Expression where
     arbitrary =
         QC.oneof
-            [ fmap Constant QC.arbitrary
-            , liftA2 Add QC.arbitrary QC.arbitrary
-            , liftA2 Multiply QC.arbitrary QC.arbitrary]
+            [ Constant <$> QC.arbitrary
+            , Add <$> QC.arbitrary <*> QC.arbitrary
+            , Multiply <$> QC.arbitrary <*> QC.arbitrary
+            ]
 
 instance QC.Arbitrary Instruction where
-    arbitrary = liftA2 Assign QC.arbitrary QC.arbitrary
+    arbitrary = Assign <$> QC.arbitrary <*> QC.arbitrary
 
 instance QC.Arbitrary Program where
     arbitrary =
